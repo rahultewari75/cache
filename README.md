@@ -199,7 +199,7 @@ POST /queue/deq
 
 ## Plan
 
-1. Create a folder called `service/cache`
+<!-- 1. Create a folder called `service/cache`
 2. Create a file in there called `LFU.py`
 3. Create a file in there called `LRU.py`
 4. Implement an in memory LFU cache in `LFU.py`
@@ -215,4 +215,15 @@ POST /queue/deq
 14. Create singleton instances: one cache (default LRU), one counter, one queue
 15. Update `server.py` to contain business logic functions that call the storage singletons
 16. Update `app.py` to implement HTTP routes that call functions in `server.py`
-18. Add optional CONFIGURE endpoints to change cache policy/capacity at runtime
+18. Add optional CONFIGURE endpoints to change cache policy/capacity at runtime -->
+
+### TODO
+1. implement queue
+1. add queue tests
+1. add errors to all services
+1. add storage signletons 
+1. add singleton instances
+1. update server.py to contain business logic functions that call the storage singletons
+1. add api layer in app.py that calls server.py functions
+
+

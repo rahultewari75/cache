@@ -1,5 +1,5 @@
 import unittest
-from service.cache.util.ll import Node, DoublyLinkedList
+from util.ll import Node, DoublyLinkedList
 from data_types.entry import Entry
 
 class TestNode(unittest.TestCase):

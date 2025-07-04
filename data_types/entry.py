@@ -1,12 +1,14 @@
 import time
-from typing import Optional, Union
+from typing import Optional, TypeVar, Generic
 
-class Entry:
+T = TypeVar('T')
+
+class Entry(Generic[T]):
     """
-    Entry class to wrap cache values with metadata.
+    Base entry class to wrap values with TTL metadata.
     """
     
-    def __init__(self, value: Union[str, int, float, bool, dict, list, bytes], ttl: Optional[int] = None):
+    def __init__(self, value: T, ttl: Optional[int] = None):
         self.value = value
         self.created_at = time.time()
         self.expiration_time = self.created_at + ttl if ttl is not None else None
@@ -17,7 +19,7 @@ class Entry:
             return False
         return time.time() > self.expiration_time
     
-    def get_value(self) -> Optional[Union[str, int, float, bool, dict, list, bytes]]:
+    def get_value(self) -> Optional[T]:
         """Get the value if not expired, None otherwise"""
         if self.is_expired():
             return None
@@ -38,7 +40,7 @@ class Entry:
         """Set expiration timestamp"""
         self.expiration_time = timestamp
     
-    def update_value(self, new_value: Union[str, int, float, bool, dict, list, bytes], ttl: Optional[int] = None):
+    def update_value(self, new_value: T, ttl: Optional[int] = None):
         """Update the entry's value and optionally its TTL"""
         self.value = new_value
         self.created_at = time.time()
@@ -46,13 +48,9 @@ class Entry:
     
     def __str__(self) -> str:
         """String representation of the entry"""
-        # Handle bytes display more nicely
-        if isinstance(self.value, bytes):
-            value_display = f"<bytes: {len(self.value)} bytes>"
-        else:
-            value_display = self.value
-        return f"Entry(value={value_display}, created_at={self.created_at}, expiration_time={self.expiration_time})"
+        value_display = f"<bytes: {len(self.value)} bytes>" if isinstance(self.value, bytes) else self.value
+        return f"{self.__class__.__name__}(value={value_display}, created_at={self.created_at}, expiration_time={self.expiration_time})"
     
     def __repr__(self) -> str:
         """Developer representation of the entry"""
-        return self.__str__() 
+        return self.__str__()

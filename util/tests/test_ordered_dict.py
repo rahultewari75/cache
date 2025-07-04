@@ -1,5 +1,5 @@
 import unittest
-from service.cache.util.ordered_dict import OrderedDict
+from util.ordered_dict import OrderedDict
 from data_types.entry import Entry
 
 class TestOrderedDict(unittest.TestCase):

@@ -1,7 +1,7 @@
 from collections import defaultdict
 from typing import Optional, List, Dict, Union
 from data_types.entry import Entry
-from service.cache.util.ordered_dict import OrderedDict
+from util.ordered_dict import OrderedDict
 
 class LFUCache:
     """

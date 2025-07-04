@@ -1,6 +1,6 @@
 from typing import Optional, List, Union, Dict
-from data_types.entry import Entry
-from .util.ll import DoublyLinkedList, Node
+from data_types.entry import KVEntry
+from util.ll import DoublyLinkedList, Node
 
 class LRUCache:
     """
@@ -32,7 +32,7 @@ class LRUCache:
             if len(self._cache) >= self.capacity:
                 self._evict_lru()
             
-            entry = Entry(value, ttl)
+            entry = KVEntry(value, ttl)
             node = self._dll.add_to_head(key, entry)
             self._cache[key] = node
     
@@ -98,7 +98,7 @@ class LRUCache:
         expired_keys = []
         
         for key, node in self._cache.items():
-            entry = node.value  # node.value is an Entry object
+            entry = node.value
             if entry.is_expired():
                 expired_keys.append(key)
         
@@ -108,7 +108,6 @@ class LRUCache:
     def _evict_lru(self):
         """Evict the least recently used key"""
         if not self._dll.is_empty():
-
             lru_node = self._dll.remove_from_tail()
             if lru_node and lru_node.key in self._cache:
                 del self._cache[lru_node.key]

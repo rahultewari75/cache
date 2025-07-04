@@ -218,9 +218,6 @@ POST /queue/deq
 18. Add optional CONFIGURE endpoints to change cache policy/capacity at runtime -->
 
 ### TODO
-1. implement queue
-1. add queue tests
-1. add errors to all services
 1. add storage signletons 
 1. add singleton instances
 1. update server.py to contain business logic functions that call the storage singletons

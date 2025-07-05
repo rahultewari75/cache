@@ -11,8 +11,8 @@ PUT /cache/configure
 **Request Body:**
 ```json
 {
-  "policy": "LFU|LRU",
-  "capacity": 1000
+  "policy": "LRU|LFU",
+  "capacity": 10
 }
 ```
 
@@ -23,36 +23,37 @@ PUT /cache/set
 **Request Body:**
 ```json
 {
-  "key": "mykey",
-  "value": "myvalue"
+  "key": "user",
+  "value": "John Doe",
+  "ttl": 3600  
 }
 ```
 
 #### Get Value
 ```
-GET /cache/get
+POST /cache/get
 ```
 **Request Body:**
 ```json
 {
-  "key": "mykey"
+  "key": "user"
 }
 ```
 **Response:**
 ```json
 {
-  "value": "myvalue"
+  "value": "John Doe"
 }
 ```
 
 #### Get TTL
 ```
-GET /cache/ttl
+POST /cache/ttl
 ```
 **Request Body:**
 ```json
 {
-  "key": "mykey"
+  "key": "user"
 }
 ```
 **Response:**
@@ -69,8 +70,8 @@ PUT /cache/expire
 **Request Body:**
 ```json
 {
-  "key": "mykey",
-  "timestamp": 1234567890
+  "key": "user",
+  "expiry": "2025-01-01T00:00:00Z"  
 }
 ```
 
@@ -91,12 +92,6 @@ GET /cache/scan
 ```
 PUT /counter/configure
 ```
-**Request Body:**
-```json
-{
-  "capacity": 1000
-}
-```
 
 #### Set Counter
 ```
@@ -105,18 +100,35 @@ PUT /counter/set
 **Request Body:**
 ```json
 {
-  "key": "mycounter"
+  "key": "user"
+}
+```
+
+#### Get Counter
+```
+POST /counter/get
+```
+**Request Body:**
+```json
+{
+  "key": "user"
+}
+```
+**Response:**
+```json
+{
+  "value": 0
 }
 ```
 
 #### Increment Counter
 ```
-PUT /counter/inc
+POST /counter/inc
 ```
 **Request Body:**
 ```json
 {
-  "key": "mycounter"
+  "key": "user"
 }
 ```
 **Response:**
@@ -128,12 +140,12 @@ PUT /counter/inc
 
 #### Decrement Counter
 ```
-PUT /counter/dec
+POST /counter/dec
 ```
 **Request Body:**
 ```json
 {
-  "key": "mycounter"
+  "key": "user"
 }
 ```
 **Response:**
@@ -149,12 +161,6 @@ PUT /counter/dec
 ```
 PUT /queue/configure
 ```
-**Request Body:**
-```json
-{
-  "capacity": 1000
-}
-```
 
 #### Set Queue
 ```
@@ -163,19 +169,42 @@ PUT /queue/set
 **Request Body:**
 ```json
 {
-  "key": "myqueue"
+  "key": "notifications"
+}
+```
+
+#### Get Queue
+```
+POST /queue/get
+```
+**Request Body:**
+```json
+{
+  "key": "notifications"
+}
+```
+**Response:**
+```json
+{
+  "values": ["item1", "item2"]
 }
 ```
 
 #### Enqueue
 ```
-PUT /queue/enq
+POST /queue/enq
 ```
 **Request Body:**
 ```json
 {
-  "key": "myqueue",
-  "value": "item1"
+  "key": "notifications",
+  "value": "New message from user"
+}
+```
+**Response:**
+```json
+{
+  "size": 1
 }
 ```
 
@@ -186,41 +215,13 @@ POST /queue/deq
 **Request Body:**
 ```json
 {
-  "key": "myqueue"
+  "key": "notifications"
 }
 ```
 **Response:**
 ```json
 {
-  "value": "item1"
+  "value": "New message from user"
 }
 ```
-
-
-## Plan
-
-<!-- 1. Create a folder called `service/cache`
-2. Create a file in there called `LFU.py`
-3. Create a file in there called `LRU.py`
-4. Implement an in memory LFU cache in `LFU.py`
-5. Implement an in memory LRU cache in `LRU.py`
-6. Create a folder called `service/counter`
-7. Create a file in there called `counter.py`
-8. Implement an in memory counter dict -> int in `counter.py`
-9. Create a folder called `service/queue`
-10. Create a file in there called `queue.py`
-11. Implement an in memory dict -> deque in `queue.py`
-12. Create a folder called `storage`
-13. Create a file called `storage/singletons.py`
-14. Create singleton instances: one cache (default LRU), one counter, one queue
-15. Update `server.py` to contain business logic functions that call the storage singletons
-16. Update `app.py` to implement HTTP routes that call functions in `server.py`
-18. Add optional CONFIGURE endpoints to change cache policy/capacity at runtime -->
-
-### TODO
-1. add storage signletons 
-1. add singleton instances
-1. update server.py to contain business logic functions that call the storage singletons
-1. add api layer in app.py that calls server.py functions
-
 

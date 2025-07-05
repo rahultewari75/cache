@@ -4,6 +4,7 @@ from storage.queue.factory.queue_factory import QueueFactory
 from storage.factory_base.factory_base import FactoryBase
 from functools import wraps
 from typing import Callable, TypeVar, Any
+from server.error import InvalidInputError
 
 T = TypeVar('T')
 
@@ -17,6 +18,8 @@ def with_instance(factory: FactoryBase):
     def decorator(f: Callable[..., T]) -> Callable[..., T]:
         @wraps(f)
         def wrapper(*args, **kwargs) -> T:
+            if not factory.instance_exists():
+                raise InvalidInputError("Service not configured. Call configure_service first.")
             instance = factory.get_instance()
             return f(instance, *args, **kwargs)
         return wrapper

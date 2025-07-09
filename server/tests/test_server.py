@@ -65,6 +65,46 @@ class TestServer(unittest.TestCase):
         self.assertEqual(get_cache("key2"), "value2")
         self.assertEqual(get_cache("key4"), "value4")
     
+    def test_random_cache_happy_path(self):
+        """Test random cache end-to-end happy path"""
+        configure_cache(CachePolicy.RANDOM, capacity=3)
+        
+        # Set initial values
+        set_cache("key1", "value1")
+        set_cache("key2", "value2")
+        set_cache("key3", "value3")
+        
+        # Verify initial values
+        self.assertEqual(get_cache("key1"), "value1")
+        self.assertEqual(get_cache("key2"), "value2")
+        self.assertEqual(get_cache("key3"), "value3")
+        
+        # Add new value to trigger eviction
+        set_cache("key4", "value4")
+        
+        # Verify we still have exactly 3 items
+        keys = scan_cache()
+        self.assertEqual(len(keys), 3)
+        
+        # Verify the values we can still access are correct
+        for key in keys:
+            if key == "key1":
+                self.assertEqual(get_cache(key), "value1")
+            elif key == "key2":
+                self.assertEqual(get_cache(key), "value2")
+            elif key == "key3":
+                self.assertEqual(get_cache(key), "value3")
+            elif key == "key4":
+                self.assertEqual(get_cache(key), "value4")
+        
+        # Test TTL functionality
+        set_cache("key5", "value5", ttl=1)
+        self.assertEqual(get_cache("key5"), "value5")
+        
+        time.sleep(1.1)
+        with self.assertRaises(KeyExpiredError):
+            get_cache("key5")
+    
     def test_counter_happy_path(self):
         """Test counter end-to-end happy path"""
         configure_counter()

@@ -56,6 +56,7 @@ class Cache:
             if len(self._storage) >= self.capacity:
                 evict_key = self.policy.evict()
                 del self._storage[evict_key]
+                self.policy.remove_key(evict_key)
             
             self._storage[key] = Entry(value, ttl)
             self.policy.record_access(key)

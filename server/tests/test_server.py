@@ -1,7 +1,7 @@
 import unittest
 import time
 from server.server import (
-    configure_cache, set_cache, get_cache, get_cache_ttl, set_cache_expiration,
+    configure_cache, set_cache, get_cache, get_cache_ttl, set_cache_expiration, scan_cache,
     configure_counter, set_counter, get_counter, increment_counter, decrement_counter,
     configure_queue, set_queue, get_queue, enqueue, dequeue
 )

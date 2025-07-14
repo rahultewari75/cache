@@ -4,7 +4,7 @@ from storage.error import InvalidInputError
 from storage.cache.cache import Cache
 from storage.cache.entry import KVEntry
 
-import random
+import secrets
 
 class RandomCache(Cache):
     """
@@ -134,7 +134,7 @@ class RandomCache(Cache):
     def _evict_random(self):
         """Evict a random key from cache using O(1) operations"""
         if self._entries:
-            idx = random.randrange(len(self._entries))
+            idx = secrets.randbelow(len(self._entries))
             self._remove_at_index(idx)
     
     def _remove_at_index(self, idx: int):

@@ -7,6 +7,8 @@ from policy_injection_cache.policies.lfu import LFUPolicy
 from policy_injection_cache.policies.random import RandomPolicy
 from policy_injection_cache.errors.cache import KeyNotFoundError, KeyExpiredError
 from policy_injection_cache.errors.base import InvalidInputError
+from policy_injection_cache.policies.policy import ReplacementPolicy
+from typing import List, Optional, Any
 
 # Test parameters for different policies
 POLICIES = [
@@ -208,3 +210,93 @@ class TestRandomPolicy:
                 continue
         
         assert items_remaining == 2 
+
+class TestEvictKeyBug:
+    def test_evict_triggers_remove_key(self):
+        """Ensure that eviction calls policy.remove_key(evicted_key)."""
+        # Spy policy to capture calls
+        class SpyPolicy(ReplacementPolicy[str, Any]):
+            def __init__(self):
+                self.accesses: List[str] = []
+                self.evicted: Optional[str] = None
+                self.removed: List[str] = []
+            def record_access(self, key: str) -> None:
+                self.accesses.append(key)
+            def evict(self) -> str:
+                # evict the first accessed key
+                self.evicted = self.accesses[0]
+                return self.evicted
+            def remove_key(self, key: str) -> None:
+                self.removed.append(key)
+            def clear(self) -> None:
+                pass
+
+        spy = SpyPolicy()
+        cache = Cache(policy=spy, capacity=1)
+
+        cache.set("a", 1)
+        # No removal yet
+        assert spy.removed == []
+
+        # This should evict "a" and call remove_key("a")
+        cache.set("b", 2)
+
+        assert spy.evicted == "a"
+        assert spy.removed == ["a"], "policy.remove_key was not called on eviction"
+
+class TestExpiredKeyRemoval:
+    def test_expired_key_raises_expired_error(self):
+        """Test that expired keys raise KeyExpiredError."""
+        # Mock Entry that can be manually set as expired
+        class MockEntry:
+            def __init__(self, value: Any, expired: bool = False):
+                self.value = value
+                self._expired = expired
+                self.created_at = time.time()
+                self.expiration_time = time.time() - 1 if expired else None
+                
+            def is_expired(self) -> bool:
+                return self._expired
+                
+            def get_value(self) -> Any:
+                return self.value
+                
+            def set_expired(self, expired: bool) -> None:
+                self._expired = expired
+                if expired:
+                    self.expiration_time = time.time() - 1
+                else:
+                    self.expiration_time = None
+
+        # Spy policy to track removals
+        class SpyPolicy(ReplacementPolicy[str, Any]):
+            def __init__(self):
+                self.removed: List[str] = []
+            def record_access(self, key: str) -> None:
+                pass
+            def evict(self) -> str:
+                return "dummy"
+            def remove_key(self, key: str) -> None:
+                self.removed.append(key)
+            def clear(self) -> None:
+                pass
+
+        spy = SpyPolicy()
+        cache = Cache(policy=spy, capacity=2)
+        
+        # Inject our mock entries directly into storage
+        mock_entry1 = MockEntry("value1", expired=True)
+        mock_entry2 = MockEntry("value2", expired=False)
+        cache._storage["key1"] = mock_entry1
+        cache._storage["key2"] = mock_entry2
+        
+        # Access key2 (not expired) - should work
+        assert cache.get("key2") == "value2"
+        
+        # Try to access key1 (expired) - should raise KeyExpiredError
+        with pytest.raises(KeyExpiredError):
+            cache.get("key1")
+            
+        # Verify key1 was removed from both storage and policy
+        assert "key1" not in cache._storage
+        assert "key1" in spy.removed
